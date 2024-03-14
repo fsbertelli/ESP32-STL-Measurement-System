@@ -6,28 +6,29 @@
   Solinftec Row Crops Development
 */
 
-const int pinoSensorCorrente = A0;
+#include "EmonLib.h" 
 
-void setup() {
-  Serial.begin(115200);
+#define CURRENT_CAL 22.80
+const int pinoSensor = A2;
+float ruido = 0.08;
 
+EnergyMonitor emon1;
+
+void setup(){  
+  Serial.begin(9600);
+  emon1.current(pinoSensor, CURRENT_CAL);
 }
 
-void loop() {
-
-}
-
-
-void measureAmps(){
-  int valorAnalogico = analogRead(pinoSensorCorrente);
-
-  float corrente = (valorAnalogico / 1023.0) * 3300.0;
-  corrente = corrente / 185.0; //185mV -> sensibilidade 
-
-  Serial.print("Corrente: ");
-  Serial.print(corrente);
-  Serial.println(" mA")
-
-  delay(1000);
-
+void loop(){
+  emon1.calcVI(17,100);
+  double currentDraw = emon1.Irms; 
+  currentDraw = currentDraw-ruido; 
+  
+  if(currentDraw < 0.05){ 
+      currentDraw = 0; 
+  }
+    Serial.print("$CURRENT,");
+    Serial.println(currentDraw); 
+    //Serial.println("A"); 
+    delay(1000);
 }
